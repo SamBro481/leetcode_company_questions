@@ -20,6 +20,8 @@
     --google: #6fb1ff;
     --meta: #7c8cff;
     --netflix: #ff5f6d;
+    --star: #ffc24b;
+    --star-glow: rgba(255,194,75,0.16);
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   }
@@ -34,11 +36,12 @@
   h1{font-size:24px;font-weight:700;margin:0 0 6px;letter-spacing:-0.01em;}
   .sub{color:var(--text-dim);font-size:13.5px;line-height:1.5;max-width:620px;}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0;}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0;}
   .stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
   .stat .n{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);}
   .stat .l{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
   .stat.accent .n{color:var(--accent);}
+  .stat.star .n{color:var(--star);}
 
   .progress-track{height:6px;border-radius:4px;background:var(--panel-2);border:1px solid var(--border);overflow:hidden;margin-top:14px;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-dim),var(--accent));width:0%;transition:width .35s ease;}
@@ -53,6 +56,7 @@
   .chip:hover{border-color:#36404f;color:var(--text);}
   .chip.active{background:var(--accent-glow);border-color:var(--accent-dim);color:var(--accent);}
   .chip.reset{color:var(--text-faint);}
+  .chip.star-chip.active{background:var(--star-glow);border-color:#9a7426;color:var(--star);}
 
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 18px;font-family:var(--mono);font-size:10.5px;color:var(--text-faint);}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
@@ -68,11 +72,24 @@
   td{padding:10px 10px;vertical-align:middle;font-size:13.5px;}
 
   td.rank{font-family:var(--mono);color:var(--text-faint);font-size:12px;width:34px;}
-  td.check{width:34px;}
+  td.check{width:30px;}
   .box{width:18px;height:18px;border-radius:5px;border:1.5px solid #3a4452;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;background:var(--panel-2);}
   .box svg{opacity:0;transform:scale(.6);transition:all .12s;}
   .box.checked{background:var(--accent);border-color:var(--accent);}
   .box.checked svg{opacity:1;transform:scale(1);}
+
+  td.star{width:28px;}
+  .star-btn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:5px;transition:all .12s;}
+  .star-btn:hover{background:var(--panel-2);}
+  .star-btn svg{stroke:#3a4452;fill:none;transition:all .12s;}
+  .star-btn.starred svg{stroke:var(--star);fill:var(--star);}
+
+  td.noteCol{width:28px;}
+  .note-btn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:5px;transition:all .12s;position:relative;}
+  .note-btn:hover{background:var(--panel-2);}
+  .note-btn svg{stroke:#3a4452;fill:none;transition:all .12s;}
+  .note-btn.has-note svg{stroke:var(--google);}
+  .note-btn.has-note::after{content:'';position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--google);box-shadow:0 0 4px var(--google);}
 
   td.title a{color:var(--text);text-decoration:none;border-bottom:1px solid transparent;}
   td.title a:hover{color:var(--accent);border-bottom-color:var(--accent-dim);}
@@ -98,8 +115,24 @@
   .reset-btn:hover{color:#ff6b6b;border-color:#5a2a2a;}
 
   ::selection{background:var(--accent-glow);}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(5,7,10,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal-overlay.open{display:flex;}
+  .modal{width:100%;max-width:480px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .modal-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.4;}
+  .modal-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin-bottom:3px;}
+  .modal-close{background:none;border:none;color:var(--text-faint);font-size:20px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:5px;flex-shrink:0;}
+  .modal-close:hover{color:var(--text);background:var(--panel-2);}
+  .modal textarea{width:100%;min-height:150px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;font-family:var(--sans);outline:none;resize:vertical;line-height:1.5;}
+  .modal textarea:focus{border-color:var(--google);}
+  .modal-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+  .modal-hint{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);}
+  .modal-save{font-family:var(--mono);font-size:11.5px;background:var(--accent-glow);border:1px solid var(--accent-dim);color:var(--accent);border-radius:7px;padding:7px 14px;cursor:pointer;}
+  .modal-save:hover{background:rgba(94,230,160,0.22);}
+
   @media (max-width:560px){
-    .stats{grid-template-columns:repeat(2,1fr);}
+    .stats{grid-template-columns:repeat(3,1fr);}
     td.companies{display:none;}
     .legend{display:none;}
   }
@@ -116,6 +149,7 @@
 
   <div class="stats">
     <div class="stat accent"><div class="n" id="statDone">0</div><div class="l">Solved</div></div>
+    <div class="stat star"><div class="n" id="statStarred">0</div><div class="l">Starred</div></div>
     <div class="stat"><div class="n" id="statTotal">110</div><div class="l">Total</div></div>
     <div class="stat"><div class="n" id="statPct">0%</div><div class="l">Complete</div></div>
     <div class="stat"><div class="n" id="statShown">110</div><div class="l">Shown</div></div>
@@ -127,6 +161,7 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
       <input id="searchBox" type="text" placeholder="Search by problem name…">
     </div>
+    <div class="chip star-chip" id="starOnlyChip">★ Starred only</div>
     <div class="chip reset" id="resetFilters">Clear filters</div>
   </div>
   <div class="controls" id="companyChips" style="margin-top:-6px;"></div>
@@ -136,6 +171,8 @@
     <thead>
       <tr>
         <th class="num">#</th>
+        <th></th>
+        <th></th>
         <th></th>
         <th>Problem</th>
         <th>Asked by</th>
@@ -147,31 +184,54 @@
   <div class="empty" id="emptyState">No problems match your filters.</div>
 
   <div class="footer-bar">
-    <div class="note" id="sourceNote">source: company-reported LeetCode questions, MAANG, medium difficulty only</div>
+    <div class="note" id="sourceNote">source: company-reported LeetCode questions, MAANG, medium difficulty only · ★ to mark important, ✎ for your notes</div>
     <button class="reset-btn" id="resetProgress">Reset progress</button>
   </div>
 
+</div>
+
+<div class="modal-overlay" id="noteModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-eyebrow">Your approach</div>
+        <div class="modal-title" id="noteModalTitle"></div>
+      </div>
+      <button class="modal-close" id="noteModalClose">&times;</button>
+    </div>
+    <textarea id="noteTextarea" placeholder="Pattern, key insight, time/space complexity, gotchas, edge cases…"></textarea>
+    <div class="modal-foot">
+      <span class="modal-hint">Saves automatically</span>
+      <button class="modal-save" id="noteModalSave">Done</button>
+    </div>
+  </div>
 </div>
 
 <script>
 const DATA = [{"title":"Merge Intervals","url":"https://leetcode.com/problems/merge-intervals","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":82.5,"slug":"merge-intervals"},{"title":"Longest Substring Without Repeating Characters","url":"https://leetcode.com/problems/longest-substring-without-repeating-characters","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":80.0,"slug":"longest-substring-without-repeating-characters"},{"title":"LRU Cache","url":"https://leetcode.com/problems/lru-cache","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":77.5,"slug":"lru-cache"},{"title":"Top K Frequent Elements","url":"https://leetcode.com/problems/top-k-frequent-elements","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":70.0,"slug":"top-k-frequent-elements"},{"title":"Course Schedule II","url":"https://leetcode.com/problems/course-schedule-ii","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":62.5,"slug":"course-schedule-ii"},{"title":"Word Break","url":"https://leetcode.com/problems/word-break","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":57.5,"slug":"word-break"},{"title":"Find Peak Element","url":"https://leetcode.com/problems/find-peak-element","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":60.0,"slug":"find-peak-element"},{"title":"String to Integer (atoi)","url":"https://leetcode.com/problems/string-to-integer-atoi","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":52.5,"slug":"string-to-integer-atoi"},{"title":"Word Search","url":"https://leetcode.com/problems/word-search","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":52.5,"slug":"word-search"},{"title":"Coin Change","url":"https://leetcode.com/problems/coin-change","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":50.0,"slug":"coin-change"},{"title":"Time Based Key-Value Store","url":"https://leetcode.com/problems/time-based-key-value-store","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":52.5,"slug":"time-based-key-value-store"},{"title":"Snapshot Array","url":"https://leetcode.com/problems/snapshot-array","companies":["Amazon","Apple","Google","Meta","Netflix"],"numCompanies":5,"avgFreq":37.5,"slug":"snapshot-array"},{"title":"Number of Islands","url":"https://leetcode.com/problems/number-of-islands","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":75.0,"slug":"number-of-islands"},{"title":"Subarray Sum Equals K","url":"https://leetcode.com/problems/subarray-sum-equals-k","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":71.9,"slug":"subarray-sum-equals-k"},{"title":"3Sum","url":"https://leetcode.com/problems/3sum","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":68.8,"slug":"3sum"},{"title":"Kth Largest Element in an Array","url":"https://leetcode.com/problems/kth-largest-element-in-an-array","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":68.8,"slug":"kth-largest-element-in-an-array"},{"title":"Maximum Subarray","url":"https://leetcode.com/problems/maximum-subarray","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":68.8,"slug":"maximum-subarray"},{"title":"Add Two Numbers","url":"https://leetcode.com/problems/add-two-numbers","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":65.6,"slug":"add-two-numbers"},{"title":"Course Schedule","url":"https://leetcode.com/problems/course-schedule","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":65.6,"slug":"course-schedule"},{"title":"Group Anagrams","url":"https://leetcode.com/problems/group-anagrams","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":65.6,"slug":"group-anagrams"},{"title":"Longest Palindromic Substring","url":"https://leetcode.com/problems/longest-palindromic-substring","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":65.6,"slug":"longest-palindromic-substring"},{"title":"Lowest Common Ancestor of a Binary Tree","url":"https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":65.6,"slug":"lowest-common-ancestor-of-a-binary-tree"},{"title":"Container With Most Water","url":"https://leetcode.com/problems/container-with-most-water","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"container-with-most-water"},{"title":"Find First and Last Position of Element in Sorted Array","url":"https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"find-first-and-last-position-of-element-in-sorted-array"},{"title":"Generate Parentheses","url":"https://leetcode.com/problems/generate-parentheses","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"generate-parentheses"},{"title":"Longest Consecutive Sequence","url":"https://leetcode.com/problems/longest-consecutive-sequence","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"longest-consecutive-sequence"},{"title":"Reverse Integer","url":"https://leetcode.com/problems/reverse-integer","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"reverse-integer"},{"title":"Search in Rotated Sorted Array","url":"https://leetcode.com/problems/search-in-rotated-sorted-array","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"search-in-rotated-sorted-array"},{"title":"Spiral Matrix","url":"https://leetcode.com/problems/spiral-matrix","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":62.5,"slug":"spiral-matrix"},{"title":"Best Time to Buy and Sell Stock II","url":"https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":59.4,"slug":"best-time-to-buy-and-sell-stock-ii"},{"title":"Letter Combinations of a Phone Number","url":"https://leetcode.com/problems/letter-combinations-of-a-phone-number","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":59.4,"slug":"letter-combinations-of-a-phone-number"},{"title":"Product of Array Except Self","url":"https://leetcode.com/problems/product-of-array-except-self","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":59.4,"slug":"product-of-array-except-self"},{"title":"Rotate Array","url":"https://leetcode.com/problems/rotate-array","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":59.4,"slug":"rotate-array"},{"title":"Rotate Image","url":"https://leetcode.com/problems/rotate-image","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":59.4,"slug":"rotate-image"},{"title":"Koko Eating Bananas","url":"https://leetcode.com/problems/koko-eating-bananas","companies":["Amazon","Google","Meta","Netflix"],"numCompanies":4,"avgFreq":62.5,"slug":"koko-eating-bananas"},{"title":"Basic Calculator II","url":"https://leetcode.com/problems/basic-calculator-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":56.2,"slug":"basic-calculator-ii"},{"title":"Insert Delete GetRandom O(1)","url":"https://leetcode.com/problems/insert-delete-getrandom-o1","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":56.2,"slug":"insert-delete-getrandom-o1"},{"title":"Jump Game","url":"https://leetcode.com/problems/jump-game","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":56.2,"slug":"jump-game"},{"title":"Valid Sudoku","url":"https://leetcode.com/problems/valid-sudoku","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":56.2,"slug":"valid-sudoku"},{"title":"Binary Tree Right Side View","url":"https://leetcode.com/problems/binary-tree-right-side-view","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"binary-tree-right-side-view"},{"title":"Copy List with Random Pointer","url":"https://leetcode.com/problems/copy-list-with-random-pointer","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"copy-list-with-random-pointer"},{"title":"Decode String","url":"https://leetcode.com/problems/decode-string","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"decode-string"},{"title":"Max Consecutive Ones III","url":"https://leetcode.com/problems/max-consecutive-ones-iii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"max-consecutive-ones-iii"},{"title":"Min Stack","url":"https://leetcode.com/problems/min-stack","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"min-stack"},{"title":"Random Pick with Weight","url":"https://leetcode.com/problems/random-pick-with-weight","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"random-pick-with-weight"},{"title":"Remove Nth Node From End of List","url":"https://leetcode.com/problems/remove-nth-node-from-end-of-list","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"remove-nth-node-from-end-of-list"},{"title":"Reverse Words in a String","url":"https://leetcode.com/problems/reverse-words-in-a-string","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"reverse-words-in-a-string"},{"title":"Simplify Path","url":"https://leetcode.com/problems/simplify-path","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":53.1,"slug":"simplify-path"},{"title":"4Sum","url":"https://leetcode.com/problems/4sum","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"4sum"},{"title":"Binary Tree Level Order Traversal","url":"https://leetcode.com/problems/binary-tree-level-order-traversal","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"binary-tree-level-order-traversal"},{"title":"Capacity To Ship Packages Within D Days","url":"https://leetcode.com/problems/capacity-to-ship-packages-within-d-days","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"capacity-to-ship-packages-within-d-days"},{"title":"Longest Repeating Character Replacement","url":"https://leetcode.com/problems/longest-repeating-character-replacement","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"longest-repeating-character-replacement"},{"title":"Rotting Oranges","url":"https://leetcode.com/problems/rotting-oranges","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"rotting-oranges"},{"title":"String Compression","url":"https://leetcode.com/problems/string-compression","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":50.0,"slug":"string-compression"},{"title":"Find K Closest Elements","url":"https://leetcode.com/problems/find-k-closest-elements","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"find-k-closest-elements"},{"title":"House Robber","url":"https://leetcode.com/problems/house-robber","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"house-robber"},{"title":"Search a 2D Matrix II","url":"https://leetcode.com/problems/search-a-2d-matrix-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"search-a-2d-matrix-ii"},{"title":"Set Matrix Zeroes","url":"https://leetcode.com/problems/set-matrix-zeroes","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"set-matrix-zeroes"},{"title":"Shortest Path in Binary Matrix","url":"https://leetcode.com/problems/shortest-path-in-binary-matrix","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"shortest-path-in-binary-matrix"},{"title":"Sort Colors","url":"https://leetcode.com/problems/sort-colors","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"sort-colors"},{"title":"Task Scheduler","url":"https://leetcode.com/problems/task-scheduler","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"task-scheduler"},{"title":"Two Sum II - Input Array Is Sorted","url":"https://leetcode.com/problems/two-sum-ii-input-array-is-sorted","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":46.9,"slug":"two-sum-ii-input-array-is-sorted"},{"title":"All Nodes Distance K in Binary Tree","url":"https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"all-nodes-distance-k-in-binary-tree"},{"title":"Clone Graph","url":"https://leetcode.com/problems/clone-graph","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"clone-graph"},{"title":"Combination Sum","url":"https://leetcode.com/problems/combination-sum","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"combination-sum"},{"title":"Edit Distance","url":"https://leetcode.com/problems/edit-distance","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"edit-distance"},{"title":"Fruit Into Baskets","url":"https://leetcode.com/problems/fruit-into-baskets","companies":["Amazon","Google","Meta","Netflix"],"numCompanies":4,"avgFreq":46.9,"slug":"fruit-into-baskets"},{"title":"Implement Trie (Prefix Tree)","url":"https://leetcode.com/problems/implement-trie-prefix-tree","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"implement-trie-prefix-tree"},{"title":"Insert Interval","url":"https://leetcode.com/problems/insert-interval","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"insert-interval"},{"title":"Jump Game II","url":"https://leetcode.com/problems/jump-game-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"jump-game-ii"},{"title":"K Closest Points to Origin","url":"https://leetcode.com/problems/k-closest-points-to-origin","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"k-closest-points-to-origin"},{"title":"Maximal Square","url":"https://leetcode.com/problems/maximal-square","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"maximal-square"},{"title":"Minimum Remove to Make Valid Parentheses","url":"https://leetcode.com/problems/minimum-remove-to-make-valid-parentheses","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"minimum-remove-to-make-valid-parentheses"},{"title":"Palindromic Substrings","url":"https://leetcode.com/problems/palindromic-substrings","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"palindromic-substrings"},{"title":"Permutations","url":"https://leetcode.com/problems/permutations","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"permutations"},{"title":"Search a 2D Matrix","url":"https://leetcode.com/problems/search-a-2d-matrix","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":43.8,"slug":"search-a-2d-matrix"},{"title":"Asteroid Collision","url":"https://leetcode.com/problems/asteroid-collision","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"asteroid-collision"},{"title":"Binary Tree Zigzag Level Order Traversal","url":"https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"binary-tree-zigzag-level-order-traversal"},{"title":"Count Primes","url":"https://leetcode.com/problems/count-primes","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"count-primes"},{"title":"Delete Node in a Linked List","url":"https://leetcode.com/problems/delete-node-in-a-linked-list","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"delete-node-in-a-linked-list"},{"title":"Find Minimum in Rotated Sorted Array","url":"https://leetcode.com/problems/find-minimum-in-rotated-sorted-array","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"find-minimum-in-rotated-sorted-array"},{"title":"Gas Station","url":"https://leetcode.com/problems/gas-station","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"gas-station"},{"title":"Next Greater Element II","url":"https://leetcode.com/problems/next-greater-element-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"next-greater-element-ii"},{"title":"Odd Even Linked List","url":"https://leetcode.com/problems/odd-even-linked-list","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"odd-even-linked-list"},{"title":"Reverse Linked List II","url":"https://leetcode.com/problems/reverse-linked-list-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"reverse-linked-list-ii"},{"title":"Validate Binary Search Tree","url":"https://leetcode.com/problems/validate-binary-search-tree","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"validate-binary-search-tree"},{"title":"Binary Search Tree Iterator","url":"https://leetcode.com/problems/binary-search-tree-iterator","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"binary-search-tree-iterator"},{"title":"Continuous Subarray Sum","url":"https://leetcode.com/problems/continuous-subarray-sum","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"continuous-subarray-sum"},{"title":"Design Circular Queue","url":"https://leetcode.com/problems/design-circular-queue","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"design-circular-queue"},{"title":"Interval List Intersections","url":"https://leetcode.com/problems/interval-list-intersections","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"interval-list-intersections"},{"title":"Kth Smallest Element in a Sorted Matrix","url":"https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"kth-smallest-element-in-a-sorted-matrix"},{"title":"Lowest Common Ancestor of a Binary Search Tree","url":"https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"lowest-common-ancestor-of-a-binary-search-tree"},{"title":"Max Area of Island","url":"https://leetcode.com/problems/max-area-of-island","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"max-area-of-island"},{"title":"Permutation in String","url":"https://leetcode.com/problems/permutation-in-string","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"permutation-in-string"},{"title":"Reorder List","url":"https://leetcode.com/problems/reorder-list","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"reorder-list"},{"title":"Subarray Product Less Than K","url":"https://leetcode.com/problems/subarray-product-less-than-k","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"subarray-product-less-than-k"},{"title":"Subsets II","url":"https://leetcode.com/problems/subsets-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"subsets-ii"},{"title":"Sum of Subarray Minimums","url":"https://leetcode.com/problems/sum-of-subarray-minimums","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":37.5,"slug":"sum-of-subarray-minimums"},{"title":"Cheapest Flights Within K Stops","url":"https://leetcode.com/problems/cheapest-flights-within-k-stops","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"cheapest-flights-within-k-stops"},{"title":"Evaluate Reverse Polish Notation","url":"https://leetcode.com/problems/evaluate-reverse-polish-notation","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"evaluate-reverse-polish-notation"},{"title":"Exclusive Time of Functions","url":"https://leetcode.com/problems/exclusive-time-of-functions","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"exclusive-time-of-functions"},{"title":"Find All Anagrams in a String","url":"https://leetcode.com/problems/find-all-anagrams-in-a-string","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"find-all-anagrams-in-a-string"},{"title":"Flatten Nested List Iterator","url":"https://leetcode.com/problems/flatten-nested-list-iterator","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"flatten-nested-list-iterator"},{"title":"H-Index","url":"https://leetcode.com/problems/h-index","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"h-index"},{"title":"House Robber II","url":"https://leetcode.com/problems/house-robber-ii","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":34.4,"slug":"house-robber-ii"},{"title":"Zigzag Conversion","url":"https://leetcode.com/problems/zigzag-conversion","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":40.6,"slug":"zigzag-conversion"},{"title":"Network Delay Time","url":"https://leetcode.com/problems/network-delay-time","companies":["Amazon","Google","Meta","Netflix"],"numCompanies":4,"avgFreq":37.5,"slug":"network-delay-time"},{"title":"01 Matrix","url":"https://leetcode.com/problems/01-matrix","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":31.2,"slug":"01-matrix"},{"title":"Decode Ways","url":"https://leetcode.com/problems/decode-ways","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":31.2,"slug":"decode-ways"},{"title":"Design Add and Search Words Data Structure","url":"https://leetcode.com/problems/design-add-and-search-words-data-structure","companies":["Amazon","Apple","Google","Meta"],"numCompanies":4,"avgFreq":31.2,"slug":"design-add-and-search-words-data-structure"}];
 
 const STORAGE_KEY = 'maang-medium-tracker-v1';
+const STAR_KEY = 'maang-medium-tracker-v1-starred';
+const NOTES_KEY = 'maang-medium-tracker-v1-notes';
 let progress = {};
+let starred = {};
+let notes = {};
 let activeCompanies = new Set();
 let statusFilter = 'all'; // all | done | todo
+let starOnly = false;
 let searchTerm = '';
+let noteEditingSlug = null;
 
 const COMPANIES = ['Amazon','Apple','Google','Meta','Netflix'];
 
 function loadProgress() {
   const saved = localStorage.getItem(STORAGE_KEY);
+  const savedStar = localStorage.getItem(STAR_KEY);
+  const savedNotes = localStorage.getItem(NOTES_KEY);
 
-  if (saved) {
-    progress = JSON.parse(saved);
-  } else {
-    progress = {};
-  }
+  progress = saved ? JSON.parse(saved) : {};
+  starred = savedStar ? JSON.parse(savedStar) : {};
+  notes = savedNotes ? JSON.parse(savedNotes) : {};
 
   render();
 }
@@ -186,8 +246,32 @@ function saveProgress() {
   }, 150);
 }
 
+let starSaveTimer = null;
+function saveStar() {
+  clearTimeout(starSaveTimer);
+  starSaveTimer = setTimeout(() => {
+    localStorage.setItem(STAR_KEY, JSON.stringify(starred));
+  }, 150);
+}
+
+let notesSaveTimer = null;
+function saveNotes() {
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(() => {
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  }, 150);
+}
+
 function checkIcon(){
   return '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06140d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+}
+
+function starIcon(){
+  return '<svg width="14" height="14" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2.5 15.1 9 22.2 9.9 17 14.8 18.3 21.9 12 18.5 5.7 21.9 7 14.8 1.8 9.9 8.9 9"/></svg>';
+}
+
+function noteIcon(){
+  return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>';
 }
 
 function buildChips(){
@@ -221,6 +305,13 @@ function buildChips(){
     };
     sWrap.appendChild(el);
   });
+
+  const starChip = document.getElementById('starOnlyChip');
+  starChip.onclick = ()=>{
+    starOnly = !starOnly;
+    starChip.classList.toggle('active');
+    render();
+  };
 }
 
 function rowMatches(item){
@@ -232,6 +323,7 @@ function rowMatches(item){
   const isDone = !!progress[item.slug];
   if(statusFilter === 'done' && !isDone) return false;
   if(statusFilter === 'todo' && isDone) return false;
+  if(starOnly && !starred[item.slug]) return false;
   return true;
 }
 
@@ -240,13 +332,17 @@ function render(){
   tbody.innerHTML = '';
   let shown = 0;
   let doneCount = 0;
+  let starCount = 0;
 
   DATA.forEach((item, idx)=>{
     if(progress[item.slug]) doneCount++;
+    if(starred[item.slug]) starCount++;
     if(!rowMatches(item)) return;
     shown++;
 
     const isDone = !!progress[item.slug];
+    const isStarred = !!starred[item.slug];
+    const hasNote = !!(notes[item.slug] && notes[item.slug].trim());
     const tr = document.createElement('tr');
     tr.className = isDone ? 'done' : '';
 
@@ -255,6 +351,8 @@ function render(){
     tr.innerHTML = `
       <td class="rank num">${idx+1}</td>
       <td class="check"><div class="box ${isDone?'checked':''}" data-slug="${item.slug}">${checkIcon()}</div></td>
+      <td class="star"><div class="star-btn ${isStarred?'starred':''}" data-slug="${item.slug}" title="${isStarred?'Unmark':'Mark important'}">${starIcon()}</div></td>
+      <td class="noteCol"><div class="note-btn ${hasNote?'has-note':''}" data-slug="${item.slug}" title="${hasNote?'Edit your note':'Add a note'}">${noteIcon()}</div></td>
       <td class="title"><a href="${item.url}" target="_blank" rel="noopener">${item.title}</a></td>
       <td class="companies"><div class="badges">${badges}</div></td>
       <td class="freq">${item.avgFreq}%<div class="bar"><i style="width:${item.avgFreq}%"></i></div></td>
@@ -265,6 +363,7 @@ function render(){
   document.getElementById('emptyState').style.display = shown===0 ? 'block' : 'none';
   document.getElementById('statShown').textContent = shown;
   document.getElementById('statDone').textContent = doneCount;
+  document.getElementById('statStarred').textContent = starCount;
   document.getElementById('statTotal').textContent = DATA.length;
   const pct = DATA.length ? Math.round((doneCount/DATA.length)*100) : 0;
   document.getElementById('statPct').textContent = pct + '%';
@@ -279,6 +378,24 @@ function render(){
       render();
     };
   });
+
+  tbody.querySelectorAll('.star-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const slug = btn.dataset.slug;
+      starred[slug] = !starred[slug];
+      if(!starred[slug]) delete starred[slug];
+      saveStar();
+      render();
+    };
+  });
+
+  tbody.querySelectorAll('.note-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const slug = btn.dataset.slug;
+      const item = DATA.find(d=>d.slug===slug);
+      openNoteModal(slug, item ? item.title : '');
+    };
+  });
 }
 
 document.getElementById('searchBox').addEventListener('input', (e)=>{
@@ -290,10 +407,12 @@ document.getElementById('resetFilters').addEventListener('click', ()=>{
   searchTerm = '';
   activeCompanies.clear();
   statusFilter = 'all';
+  starOnly = false;
   document.getElementById('searchBox').value = '';
   document.querySelectorAll('#companyChips .chip').forEach(c=>c.classList.remove('active'));
   document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
   document.querySelector('#statusChips .chip[data-status="all"]').classList.add('active');
+  document.getElementById('starOnlyChip').classList.remove('active');
   render();
 });
 
@@ -302,6 +421,43 @@ document.getElementById('resetProgress').addEventListener('click', async ()=>{
   progress = {};
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   render();
+});
+
+function openNoteModal(slug, title){
+  noteEditingSlug = slug;
+  document.getElementById('noteModalTitle').textContent = title;
+  document.getElementById('noteTextarea').value = notes[slug] || '';
+  document.getElementById('noteModalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('noteTextarea').focus(), 10);
+}
+
+function closeNoteModal(){
+  if(noteEditingSlug){
+    const val = document.getElementById('noteTextarea').value.trim();
+    if(val) notes[noteEditingSlug] = val; else delete notes[noteEditingSlug];
+    saveNotes();
+  }
+  noteEditingSlug = null;
+  document.getElementById('noteModalOverlay').classList.remove('open');
+  render();
+}
+
+document.getElementById('noteTextarea').addEventListener('input', (e)=>{
+  if(!noteEditingSlug) return;
+  const val = e.target.value.trim();
+  if(val) notes[noteEditingSlug] = val; else delete notes[noteEditingSlug];
+  saveNotes();
+});
+
+document.getElementById('noteModalClose').addEventListener('click', closeNoteModal);
+document.getElementById('noteModalSave').addEventListener('click', closeNoteModal);
+document.getElementById('noteModalOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'noteModalOverlay') closeNoteModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && document.getElementById('noteModalOverlay').classList.contains('open')){
+    closeNoteModal();
+  }
 });
 
 buildChips();
